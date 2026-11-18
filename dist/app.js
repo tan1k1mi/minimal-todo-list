@@ -15,6 +15,7 @@ const navButtons = [...document.querySelectorAll("[data-view]")];
 const sidebarAdd = document.querySelector("#sidebar-add");
 const openTaskForm = document.querySelector("#open-task-form");
 const cancelTask = document.querySelector("#cancel-task");
+const taskError = document.querySelector("#task-error");
 
 let activeView = "today";
 let tasks = loadTasks();
@@ -219,6 +220,7 @@ function setDefaultDate() {
 }
 
 function openEditor() {
+  clearTaskError();
   editorOpen = true;
   form.hidden = false;
   openTaskForm.hidden = true;
@@ -231,13 +233,29 @@ function closeEditor() {
   form.reset();
   setDefaultDate();
   form.hidden = true;
+  clearTaskError();
   render();
+}
+
+function showTaskError() {
+  taskError.hidden = false;
+  input.setAttribute("aria-invalid", "true");
+  input.focus();
+}
+
+function clearTaskError() {
+  taskError.hidden = true;
+  input.removeAttribute("aria-invalid");
 }
 
 form.addEventListener("submit", (event) => {
   event.preventDefault();
   const text = input.value.trim();
-  if (!text || !dateInput.value) return;
+  if (!text) {
+    showTaskError();
+    return;
+  }
+  if (!dateInput.value) return;
 
   const dueDate = dateInput.value;
   tasks.unshift({
@@ -285,6 +303,7 @@ navButtons.forEach((button) => {
 sidebarAdd.addEventListener("click", openEditor);
 openTaskForm.addEventListener("click", openEditor);
 cancelTask.addEventListener("click", closeEditor);
+input.addEventListener("input", clearTaskError);
 
 dayPicker.addEventListener("click", (event) => {
   const button = event.target.closest(".day-option");

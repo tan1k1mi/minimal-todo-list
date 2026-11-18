@@ -67,7 +67,7 @@
             Добавить задачу
           </button>
 
-          <form class="task-form" id="task-form" hidden>
+          <form class="task-form" id="task-form" novalidate hidden>
             <label class="sr-only" for="task-input">Новая задача</label>
             <input
               id="task-input"
@@ -76,8 +76,9 @@
               placeholder="Название задачи"
               maxlength="160"
               autocomplete="off"
-              required
+              aria-describedby="task-error"
             />
+            <p class="field-error" id="task-error" role="alert" hidden>Введите название задачи</p>
             <fieldset class="day-picker-wrap">
               <legend class="sr-only">Выберите день</legend>
               <div class="day-picker" id="day-picker"></div>
