@@ -10,12 +10,32 @@
     <script src="app.js" defer></script>
   </head>
   <body>
-    <main class="app-shell">
-      <section class="task-card" aria-labelledby="page-title">
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="Навигация">
+        <div class="brand" aria-label="Мои задачи">
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="m7 12 3 3 7-7" /></svg>
+          </span>
+          <span>Мои задачи</span>
+        </div>
+
+        <nav>
+          <div class="nav-item active" aria-current="page">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6.5h16M4 12h16M4 17.5h10" /></svg>
+            <span>Сегодня</span>
+            <span class="nav-count" id="nav-count">0</span>
+          </div>
+        </nav>
+
+        <p class="storage-note">Задачи сохраняются<br />в этом браузере</p>
+      </aside>
+
+      <main class="main-content">
+        <section class="task-view" aria-labelledby="page-title">
         <header class="app-header">
           <div>
-            <p class="eyebrow">Список задач</p>
             <h1 id="page-title">Сегодня</h1>
+            <p class="subtitle">Сосредоточьтесь на главном</p>
           </div>
           <p class="task-count" id="task-count" aria-live="polite">0 задач</p>
         </header>
@@ -42,11 +62,12 @@
                 <path d="M9 11.2 11 13l4.5-4.5M5 4.5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-13a1 1 0 0 1 1-1Z" />
               </svg>
             </span>
-            <h2>Задач пока нет</h2>
-            <p>Добавьте первую задачу — она сохранится в этом браузере.</p>
+            <h2>Все дела сделаны</h2>
+            <p>Добавьте задачу, чтобы ничего не забыть.</p>
           </div>
         </div>
-      </section>
-    </main>
+        </section>
+      </main>
+    </div>
   </body>
 </html>

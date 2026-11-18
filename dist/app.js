@@ -5,6 +5,7 @@ const input = document.querySelector("#task-input");
 const list = document.querySelector("#task-list");
 const emptyState = document.querySelector("#empty-state");
 const taskCount = document.querySelector("#task-count");
+const navCount = document.querySelector("#nav-count");
 
 let tasks = loadTasks();
 
@@ -64,6 +65,7 @@ function render() {
 
   emptyState.hidden = tasks.length > 0;
   taskCount.textContent = pluralizeTasks(tasks.length);
+  navCount.textContent = tasks.length;
 }
 
 form.addEventListener("submit", (event) => {
