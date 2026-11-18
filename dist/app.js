@@ -89,7 +89,7 @@ function renderWeekPicker() {
 
   dayPicker.replaceChildren();
 
-  for (let index = 0; index < 7; index += 1) {
+  for (let index = 0; index <= 7; index += 1) {
     const date = addDays(new Date(), index);
     const dateKey = toDateKey(date);
     const button = document.createElement("button");
