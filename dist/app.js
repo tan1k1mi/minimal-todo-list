@@ -12,9 +12,13 @@ const upcomingCount = document.querySelector("#upcoming-count");
 const pageTitle = document.querySelector("#page-title");
 const pageSubtitle = document.querySelector("#page-subtitle");
 const navButtons = [...document.querySelectorAll("[data-view]")];
+const sidebarAdd = document.querySelector("#sidebar-add");
+const openTaskForm = document.querySelector("#open-task-form");
+const cancelTask = document.querySelector("#cancel-task");
 
 let activeView = "today";
 let tasks = loadTasks();
+let editorOpen = false;
 
 function toDateKey(date = new Date()) {
   const year = date.getFullYear();
@@ -190,7 +194,8 @@ function render() {
   const todayTasks = tasks.filter((task) => task.dueDate === today).length;
   const futureTasks = tasks.filter((task) => task.dueDate >= today).length;
 
-  emptyState.hidden = visibleTasks.length > 0;
+  emptyState.hidden = visibleTasks.length > 0 || editorOpen;
+  openTaskForm.hidden = editorOpen;
   taskCount.textContent = pluralizeTasks(visibleTasks.length);
   todayCount.textContent = todayTasks;
   upcomingCount.textContent = futureTasks;
@@ -213,6 +218,22 @@ function setDefaultDate() {
   renderWeekPicker();
 }
 
+function openEditor() {
+  editorOpen = true;
+  form.hidden = false;
+  openTaskForm.hidden = true;
+  emptyState.hidden = true;
+  input.focus();
+}
+
+function closeEditor() {
+  editorOpen = false;
+  form.reset();
+  setDefaultDate();
+  form.hidden = true;
+  render();
+}
+
 form.addEventListener("submit", (event) => {
   event.preventDefault();
   const text = input.value.trim();
@@ -228,10 +249,7 @@ form.addEventListener("submit", (event) => {
 
   if (dueDate !== toDateKey()) activeView = "upcoming";
   saveTasks();
-  render();
-  form.reset();
-  setDefaultDate();
-  input.focus();
+  closeEditor();
 });
 
 groups.addEventListener("change", (event) => {
@@ -259,9 +277,14 @@ groups.addEventListener("click", (event) => {
 navButtons.forEach((button) => {
   button.addEventListener("click", () => {
     activeView = button.dataset.view;
-    render();
+    if (editorOpen) closeEditor();
+    else render();
   });
 });
+
+sidebarAdd.addEventListener("click", openEditor);
+openTaskForm.addEventListener("click", openEditor);
+cancelTask.addEventListener("click", closeEditor);
 
 dayPicker.addEventListener("click", (event) => {
   const button = event.target.closest(".day-option");
