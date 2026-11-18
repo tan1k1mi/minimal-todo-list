@@ -2,17 +2,48 @@ const STORAGE_KEY = "todo-list.tasks.v1";
 
 const form = document.querySelector("#task-form");
 const input = document.querySelector("#task-input");
-const list = document.querySelector("#task-list");
+const dateInput = document.querySelector("#task-date");
+const groups = document.querySelector("#task-groups");
 const emptyState = document.querySelector("#empty-state");
 const taskCount = document.querySelector("#task-count");
-const navCount = document.querySelector("#nav-count");
+const todayCount = document.querySelector("#today-count");
+const upcomingCount = document.querySelector("#upcoming-count");
+const pageTitle = document.querySelector("#page-title");
+const pageSubtitle = document.querySelector("#page-subtitle");
+const navButtons = [...document.querySelectorAll("[data-view]")];
 
+let activeView = "today";
 let tasks = loadTasks();
 
+function toDateKey(date = new Date()) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function parseDateKey(value) {
+  const [year, month, day] = value.split("-").map(Number);
+  return new Date(year, month - 1, day);
+}
+
+function addDays(date, amount) {
+  const next = new Date(date);
+  next.setDate(next.getDate() + amount);
+  return next;
+}
+
 function loadTasks() {
+  const today = toDateKey();
+
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
-    return Array.isArray(saved) ? saved : [];
+    if (!Array.isArray(saved)) return [];
+
+    return saved.map((task) => ({
+      ...task,
+      dueDate: /^\d{4}-\d{2}-\d{2}$/.test(task.dueDate) ? task.dueDate : today,
+    }));
   } catch {
     return [];
   }
@@ -32,60 +63,147 @@ function pluralizeTasks(count) {
   return `${count} задач`;
 }
 
+function formatDayHeading(dateKey) {
+  const today = toDateKey();
+  const tomorrow = toDateKey(addDays(new Date(), 1));
+
+  if (dateKey === today) return "Сегодня";
+  if (dateKey === tomorrow) return "Завтра";
+
+  return new Intl.DateTimeFormat("ru-RU", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  }).format(parseDateKey(dateKey));
+}
+
+function getVisibleTasks() {
+  const today = toDateKey();
+  const visible = activeView === "today"
+    ? tasks.filter((task) => task.dueDate === today)
+    : tasks.filter((task) => task.dueDate >= today);
+
+  return visible.sort((a, b) => a.dueDate.localeCompare(b.dueDate));
+}
+
+function createTaskItem(task) {
+  const item = document.createElement("li");
+  item.className = `task-item${task.completed ? " completed" : ""}`;
+  item.dataset.id = task.id;
+
+  const checkbox = document.createElement("input");
+  checkbox.className = "task-checkbox";
+  checkbox.type = "checkbox";
+  checkbox.checked = task.completed;
+  checkbox.setAttribute("aria-label", `Отметить задачу «${task.text}» выполненной`);
+
+  const content = document.createElement("div");
+  content.className = "task-content";
+
+  const text = document.createElement("span");
+  text.className = "task-text";
+  text.textContent = task.text;
+
+  const date = document.createElement("span");
+  date.className = "task-date";
+  date.textContent = formatDayHeading(task.dueDate);
+
+  content.append(text, date);
+
+  const deleteButton = document.createElement("button");
+  deleteButton.className = "delete-button";
+  deleteButton.type = "button";
+  deleteButton.setAttribute("aria-label", `Удалить задачу «${task.text}»`);
+  deleteButton.innerHTML = `
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M4 7h16M9 7V4h6v3m-8 0 1 13h8l1-13M10 11v5m4-5v5" />
+    </svg>`;
+
+  item.append(checkbox, content, deleteButton);
+  return item;
+}
+
 function render() {
-  list.replaceChildren();
+  const visibleTasks = getVisibleTasks();
+  groups.replaceChildren();
 
-  tasks.forEach((task) => {
-    const item = document.createElement("li");
-    item.className = `task-item${task.completed ? " completed" : ""}`;
-    item.dataset.id = task.id;
+  const tasksByDate = Map.groupBy
+    ? Map.groupBy(visibleTasks, (task) => task.dueDate)
+    : visibleTasks.reduce((map, task) => {
+        const current = map.get(task.dueDate) || [];
+        current.push(task);
+        map.set(task.dueDate, current);
+        return map;
+      }, new Map());
 
-    const checkbox = document.createElement("input");
-    checkbox.className = "task-checkbox";
-    checkbox.type = "checkbox";
-    checkbox.checked = task.completed;
-    checkbox.setAttribute("aria-label", `Отметить задачу «${task.text}» выполненной`);
+  tasksByDate.forEach((dayTasks, dateKey) => {
+    const section = document.createElement("section");
+    section.className = "day-group";
 
-    const text = document.createElement("span");
-    text.className = "task-text";
-    text.textContent = task.text;
+    if (activeView === "upcoming") {
+      const heading = document.createElement("h2");
+      heading.className = "day-heading";
+      heading.textContent = formatDayHeading(dateKey);
+      section.append(heading);
+    }
 
-    const deleteButton = document.createElement("button");
-    deleteButton.className = "delete-button";
-    deleteButton.type = "button";
-    deleteButton.setAttribute("aria-label", `Удалить задачу «${task.text}»`);
-    deleteButton.innerHTML = `
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M4 7h16M9 7V4h6v3m-8 0 1 13h8l1-13M10 11v5m4-5v5" />
-      </svg>`;
-
-    item.append(checkbox, text, deleteButton);
-    list.append(item);
+    const list = document.createElement("ul");
+    list.className = "task-list";
+    list.setAttribute("aria-label", formatDayHeading(dateKey));
+    dayTasks.forEach((task) => list.append(createTaskItem(task)));
+    section.append(list);
+    groups.append(section);
   });
 
-  emptyState.hidden = tasks.length > 0;
-  taskCount.textContent = pluralizeTasks(tasks.length);
-  navCount.textContent = tasks.length;
+  const today = toDateKey();
+  const todayTasks = tasks.filter((task) => task.dueDate === today).length;
+  const futureTasks = tasks.filter((task) => task.dueDate >= today).length;
+
+  emptyState.hidden = visibleTasks.length > 0;
+  taskCount.textContent = pluralizeTasks(visibleTasks.length);
+  todayCount.textContent = todayTasks;
+  upcomingCount.textContent = futureTasks;
+  pageTitle.textContent = activeView === "today" ? "Сегодня" : "Предстоящие";
+  pageSubtitle.textContent = activeView === "today"
+    ? "Сосредоточьтесь на главном"
+    : "Планы по дням";
+
+  navButtons.forEach((button) => {
+    const isActive = button.dataset.view === activeView;
+    button.classList.toggle("active", isActive);
+    if (isActive) button.setAttribute("aria-current", "page");
+    else button.removeAttribute("aria-current");
+  });
+}
+
+function setDefaultDate() {
+  const today = toDateKey();
+  dateInput.min = today;
+  dateInput.value = today;
 }
 
 form.addEventListener("submit", (event) => {
   event.preventDefault();
   const text = input.value.trim();
-  if (!text) return;
+  if (!text || !dateInput.value) return;
 
+  const dueDate = dateInput.value;
   tasks.unshift({
     id: crypto.randomUUID(),
     text,
+    dueDate,
     completed: false,
   });
 
+  if (dueDate !== toDateKey()) activeView = "upcoming";
   saveTasks();
   render();
   form.reset();
+  setDefaultDate();
   input.focus();
 });
 
-list.addEventListener("change", (event) => {
+groups.addEventListener("change", (event) => {
   if (!event.target.matches(".task-checkbox")) return;
 
   const item = event.target.closest(".task-item");
@@ -97,7 +215,7 @@ list.addEventListener("change", (event) => {
   render();
 });
 
-list.addEventListener("click", (event) => {
+groups.addEventListener("click", (event) => {
   const button = event.target.closest(".delete-button");
   if (!button) return;
 
@@ -107,4 +225,13 @@ list.addEventListener("click", (event) => {
   render();
 });
 
+navButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    activeView = button.dataset.view;
+    render();
+  });
+});
+
+setDefaultDate();
+saveTasks();
 render();

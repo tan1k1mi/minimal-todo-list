@@ -19,12 +19,17 @@
           <span>Мои задачи</span>
         </div>
 
-        <nav>
-          <div class="nav-item active" aria-current="page">
+        <nav aria-label="Разделы задач">
+          <button class="nav-item active" type="button" data-view="today" aria-current="page">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6.5h16M4 12h16M4 17.5h10" /></svg>
             <span>Сегодня</span>
-            <span class="nav-count" id="nav-count">0</span>
-          </div>
+            <span class="nav-count" id="today-count">0</span>
+          </button>
+          <button class="nav-item" type="button" data-view="upcoming">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3v3m12-3v3M4.5 9h15M5 5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Z" /></svg>
+            <span>Предстоящие</span>
+            <span class="nav-count" id="upcoming-count">0</span>
+          </button>
         </nav>
 
         <p class="storage-note">Задачи сохраняются<br />в этом браузере</p>
@@ -35,7 +40,7 @@
         <header class="app-header">
           <div>
             <h1 id="page-title">Сегодня</h1>
-            <p class="subtitle">Сосредоточьтесь на главном</p>
+            <p class="subtitle" id="page-subtitle">Сосредоточьтесь на главном</p>
           </div>
           <p class="task-count" id="task-count" aria-live="polite">0 задач</p>
         </header>
@@ -51,11 +56,13 @@
             autocomplete="off"
             required
           />
+          <label class="sr-only" for="task-date">Дата задачи</label>
+          <input id="task-date" class="date-input" name="date" type="date" required />
           <button type="submit">Добавить</button>
         </form>
 
         <div class="task-list-wrap">
-          <ul class="task-list" id="task-list" aria-label="Задачи"></ul>
+          <div id="task-groups" aria-label="Задачи"></div>
           <div class="empty-state" id="empty-state">
             <span class="empty-icon" aria-hidden="true">
               <svg viewBox="0 0 24 24" role="img">
