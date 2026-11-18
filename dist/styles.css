@@ -159,7 +159,10 @@ h1 {
 
 .task-form {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 142px auto;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "input button"
+    "days days";
   gap: 8px;
   padding: 8px;
   border: 1px solid #dedbd8;
@@ -185,16 +188,12 @@ h1 {
   font-size: 14px;
 }
 
+.task-form #task-input { grid-area: input; }
+
 .task-form input::placeholder { color: #a8a5a2; }
 
-.task-form .date-input {
-  border-left: 1px solid #ebe8e5;
-  color: #65625f;
-  font-size: 12px;
-  cursor: pointer;
-}
-
-.task-form button {
+.task-form button[type="submit"] {
+  grid-area: button;
   border: 0;
   border-radius: 6px;
   background: #dc4c3e;
@@ -206,7 +205,72 @@ h1 {
   transition: background 140ms ease;
 }
 
-.task-form button:hover { background: #c83b30; }
+.task-form button[type="submit"]:hover { background: #c83b30; }
+
+.day-picker-wrap {
+  grid-area: days;
+  min-width: 0;
+  margin: 0;
+  padding: 10px 4px 2px;
+  border: 0;
+  border-top: 1px solid #eeeae7;
+}
+
+.day-picker-wrap legend {
+  padding: 0 5px;
+  color: #999591;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.day-picker {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.day-option {
+  display: grid;
+  gap: 3px;
+  place-items: center;
+  min-width: 0;
+  min-height: 52px;
+  padding: 6px 2px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: #5f5c59;
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+
+.day-option:hover {
+  border-color: #e4dfdc;
+  background: #faf8f7;
+}
+
+.day-option.selected {
+  border-color: #dc4c3e;
+  background: #dc4c3e;
+  color: #fff;
+}
+
+.day-label {
+  overflow: hidden;
+  max-width: 100%;
+  font-size: 10px;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.day-number {
+  font-size: 16px;
+  font-weight: 650;
+  line-height: 1;
+}
 
 .task-list-wrap { margin-top: 20px; }
 
@@ -273,7 +337,8 @@ h1 {
 
 .task-checkbox:focus-visible,
 .delete-button:focus-visible,
-.task-form button:focus-visible {
+.task-form button[type="submit"]:focus-visible,
+.day-option:focus-visible {
   outline: 3px solid rgba(220, 76, 62, 0.2);
   outline-offset: 2px;
 }
@@ -448,19 +513,17 @@ h1 {
   .main-content { padding-inline: 14px; }
 
   .task-form {
-    grid-template-columns: minmax(0, 1fr) auto;
     gap: 5px;
     padding: 6px;
   }
 
-  .task-form #task-input { grid-column: 1 / -1; }
+  .task-form button[type="submit"] { padding-inline: 12px; }
 
-  .task-form .date-input {
-    border-top: 1px solid #ebe8e5;
-    border-left: 0;
-  }
-
-  .task-form button { padding-inline: 12px; }
+  .day-picker-wrap { padding-inline: 0; }
+  .day-picker { gap: 2px; }
+  .day-option { min-height: 48px; border-radius: 7px; }
+  .day-label { font-size: 9px; }
+  .day-number { font-size: 15px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

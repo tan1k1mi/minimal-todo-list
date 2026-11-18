@@ -56,8 +56,11 @@
             autocomplete="off"
             required
           />
-          <label class="sr-only" for="task-date">Дата задачи</label>
-          <input id="task-date" class="date-input" name="date" type="date" required />
+          <fieldset class="day-picker-wrap">
+            <legend>Выберите день</legend>
+            <div class="day-picker" id="day-picker"></div>
+          </fieldset>
+          <input id="task-date" name="date" type="hidden" />
           <button type="submit">Добавить</button>
         </form>
 

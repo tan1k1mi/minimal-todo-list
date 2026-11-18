@@ -3,6 +3,7 @@ const STORAGE_KEY = "todo-list.tasks.v1";
 const form = document.querySelector("#task-form");
 const input = document.querySelector("#task-input");
 const dateInput = document.querySelector("#task-date");
+const dayPicker = document.querySelector("#day-picker");
 const groups = document.querySelector("#task-groups");
 const emptyState = document.querySelector("#empty-state");
 const taskCount = document.querySelector("#task-count");
@@ -75,6 +76,36 @@ function formatDayHeading(dateKey) {
     day: "numeric",
     month: "long",
   }).format(parseDateKey(dateKey));
+}
+
+function renderWeekPicker() {
+  const selectedDate = dateInput.value || toDateKey();
+  const weekdayFormatter = new Intl.DateTimeFormat("ru-RU", { weekday: "short" });
+  const fullDateFormatter = new Intl.DateTimeFormat("ru-RU", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  });
+
+  dayPicker.replaceChildren();
+
+  for (let index = 0; index < 7; index += 1) {
+    const date = addDays(new Date(), index);
+    const dateKey = toDateKey(date);
+    const button = document.createElement("button");
+    const isSelected = dateKey === selectedDate;
+
+    button.type = "button";
+    button.className = `day-option${isSelected ? " selected" : ""}`;
+    button.dataset.date = dateKey;
+    button.setAttribute("aria-pressed", String(isSelected));
+    button.setAttribute("aria-label", `${index === 0 ? "Сегодня, " : ""}${fullDateFormatter.format(date)}`);
+    button.innerHTML = `
+      <span class="day-label">${weekdayFormatter.format(date).replace(".", "")}</span>
+      <span class="day-number">${date.getDate()}</span>`;
+
+    dayPicker.append(button);
+  }
 }
 
 function getVisibleTasks() {
@@ -178,8 +209,8 @@ function render() {
 
 function setDefaultDate() {
   const today = toDateKey();
-  dateInput.min = today;
   dateInput.value = today;
+  renderWeekPicker();
 }
 
 form.addEventListener("submit", (event) => {
@@ -230,6 +261,14 @@ navButtons.forEach((button) => {
     activeView = button.dataset.view;
     render();
   });
+});
+
+dayPicker.addEventListener("click", (event) => {
+  const button = event.target.closest(".day-option");
+  if (!button) return;
+
+  dateInput.value = button.dataset.date;
+  renderWeekPicker();
 });
 
 setDefaultDate();
